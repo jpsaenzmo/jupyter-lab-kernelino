@@ -1,0 +1,3 @@
+include README.rst
+include arduino_kernel/logo-32x32.png
+include arduino_kernel/logo-64x64.png
