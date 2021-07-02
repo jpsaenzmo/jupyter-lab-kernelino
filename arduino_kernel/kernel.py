@@ -87,11 +87,10 @@ class ArduinoKernel(Kernel):
                         shell=True,
                     )
                 except subprocess.CalledProcessError as e:
-                    raise RuntimeError(
-                        "command '{}' return with error (code {}): {}".format(
-                            e.cmd, e.returncode, e.output
-                        )
-                    )
+                    errorTxt = "Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)
+                    stream_content = {"name": "stdout", "text": errorTxt}
+                    self.send_response(self.iopub_socket, "stream", stream_content)
+                    return {"status": "abort", "execution_count": self.execution_count}
                 output = sp.decode(sys.stdout.encoding)
         except KeyboardInterrupt:
             interrupted = True
