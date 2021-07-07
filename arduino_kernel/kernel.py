@@ -75,19 +75,39 @@ class ArduinoKernel(Kernel):
                     )
                 output = sp.decode(sys.stdout.encoding)
             else:
-                fqbn = code.split("\n")[0]
-                codes = code.split("\n", 1)[1]
+                oper = code.split("\n")[0]
+                command = ''
+                if oper.split(":")[0] == "port":
+                    port = oper.split(":")[1]
+                    fqbn = code.split("\n")[1]
+                    fqbn = fqbn.split(":")[1]
+                    codes = code.split("\n", 2)[2]
+                    command = (
+                        "arduino-cli upload -p "
+                        + port
+                        + " --fqbn "
+                        + fqbn
+                        + " "
+                        + SKETCH_FOLDER
+                    )
+                elif oper.split(":")[0] == "board":
+                    fqbn = code.split("\n")[0]
+                    fqbn = fqbn.split(":")[1]
+                    codes = code.split("\n", 1)[1]
+                    command = "arduino-cli compile -b " + fqbn + " " + SKETCH_FOLDER
                 f = open(SKETCH_FOLDER + "/sketch.ino", "w+")
                 f.write(codes.rstrip())
                 f.close()
                 try:
                     sp = subprocess.check_output(
-                        "arduino-cli compile -b " + fqbn + " " + SKETCH_FOLDER,
+                        command,
                         stderr=subprocess.STDOUT,
                         shell=True,
                     )
                 except subprocess.CalledProcessError as e:
-                    errorTxt = "Command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)
+                    errorTxt = "Command '{}' return with error (code {}): {}".format(
+                        e.cmd, e.returncode, e.output
+                    )
                     stream_content = {"name": "stdout", "text": errorTxt}
                     self.send_response(self.iopub_socket, "stream", stream_content)
                     return {"status": "abort", "execution_count": self.execution_count}
