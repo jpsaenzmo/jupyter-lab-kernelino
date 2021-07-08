@@ -76,11 +76,12 @@ class ArduinoKernel(Kernel):
                 output = sp.decode(sys.stdout.encoding)
             else:
                 oper = code.split("\n")[0]
-                command = ''
-                if oper.split(":")[0] == "port":
-                    port = oper.split(":")[1]
+                command = ""
+                codes = ""
+                if oper.split("%")[0] == "port":
+                    port = oper.split("%")[1]
                     fqbn = code.split("\n")[1]
-                    fqbn = fqbn.split(":")[1]
+                    fqbn = fqbn.split("%")[1]
                     codes = code.split("\n", 2)[2]
                     command = (
                         "arduino-cli upload -p "
@@ -90,9 +91,9 @@ class ArduinoKernel(Kernel):
                         + " "
                         + SKETCH_FOLDER
                     )
-                elif oper.split(":")[0] == "board":
+                elif oper.split("%")[0] == "board":
                     fqbn = code.split("\n")[0]
-                    fqbn = fqbn.split(":")[1]
+                    fqbn = fqbn.split("%")[1]
                     codes = code.split("\n", 1)[1]
                     command = "arduino-cli compile -b " + fqbn + " " + SKETCH_FOLDER
                 f = open(SKETCH_FOLDER + "/sketch.ino", "w+")
