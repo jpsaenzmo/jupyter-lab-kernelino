@@ -74,6 +74,21 @@ class ArduinoKernel(Kernel):
                         )
                     )
                 output = sp.decode(sys.stdout.encoding)
+            elif code.startswith("arduino-cli lib install"):
+                try:
+                    sp = subprocess.check_output(
+                        code,
+                        stderr=subprocess.STDOUT,
+                        shell=True,
+                    )
+                except subprocess.CalledProcessError as e:
+                    errorTxt = "Command '{}' return with error (code {}): {}".format(
+                        e.cmd, e.returncode, e.output
+                    )
+                    stream_content = {"name": "stdout", "text": errorTxt}
+                    self.send_response(self.iopub_socket, "stream", stream_content)
+                    return {"status": "abort", "execution_count": self.execution_count}
+                output = sp.decode(sys.stdout.encoding)
             else:
                 oper = code.split("\n")[0]
                 command = ""
